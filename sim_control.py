@@ -1,5 +1,6 @@
 import os
 import math
+import time
 import numpy as np
 import pyproj
 import logging
@@ -15,8 +16,8 @@ k_v = 0.01
 utm_zone = 10
 my_proj = pyproj.Proj("+proj=utm +zone="+str(utm_zone)+", +north +ellps=WGS84 +datum=WGS84 +units=m +no_defs")
 
-
 def lonlat_to_xy(lon, lat):
+    '''convert lon/lat (in degrees) to x/y native map projection coordinates (in meters)'''
     x, y = my_proj(lon, lat)
     return x, y
 
@@ -160,6 +161,24 @@ class SimControl:
             npc_trans.position = hit.point
             npc_trans.rotation = lgsvl.Vector(
                     npc_traj[i]['roll'], npc_traj[i]['yaw'], npc_traj[i]['pitch'])
+            
+            # if i < 190:
+            #     npc_traj[i]['speed'] = 28 # TODO
+            # elif i < 210:
+            #     npc_trans.position.x -= 3.5
+            #     npc_traj[i]['speed'] = 28 # TODO
+            #     tmp = npc_trans.position.z
+            # elif i < 210+10:
+            #     npc_trans.position.x -= 3.5# / 10 * (210+10-i)
+            #     npc_traj[i]['speed'] = 11
+            #     dy = npc_trans.position.z - tmp
+            #     tmp = npc_trans.position.z
+            # else: # just left box
+            #     npc_trans.position.x -= 3.5# / 10 * (210+10-i)
+            #     npc_traj[i]['speed'] = 25
+            #     tmp -= dy / 28 * 25
+            #     npc_trans.position.z = tmp
+
             wp = lgsvl.DriveWaypoint(npc_trans.position, npc_traj[i]['speed'],
                     npc_trans.rotation, 0, 0)
             wps.append(wp)
@@ -268,9 +287,10 @@ class SimControl:
         else:
             return False
 
-    def next_yuv_frame(self):
+    def next_yuv_frame(self, save=True):
         frontFramePath = os.path.join(self.frame_dir, "front_frame_" + str(self.frame_id) + ".png")
-        self.front_cam.save(frontFramePath, compression=3)
+        if save:
+            self.front_cam.save(frontFramePath, compression=3)
         ret_frame_id = self.frame_id
         self.frame_id += 1
         return ret_frame_id
@@ -295,7 +315,7 @@ class SimControl:
         self.ctrl.throttle = throttle
         self.ctrl.steering = steering
         self.adc.apply_control(self.ctrl, True)  # sticky control
-        self.sim.run(time_limit=self.ctrl_period)
+        self.sim.run(time_limit=self.ctrl_period, time_scale = 2)
         self.sim_time += self.ctrl_period
 
     def lateral_control(self, waypt, v, yaw):
@@ -334,10 +354,17 @@ class SimControl:
         speed = sim_state.speed
         yaw = np.radians(sim_state.position[5])
         last_steering = self.ctrl.steering
+
+        s_2 = time.time()
         steering = self.lateral_control(curr_waypt, speed, yaw)
         throttle = self.longitudinal_control(curr_waypt, speed, yaw)
+        # print('_control: {}'.format(time.time()-s_2))
+        s_2 = time.time()
         self.apply_control(throttle, steering)
+        # print('_apply_control: {}'.format(time.time()-s_2))
         sim_state = self.get_adc_state()
+        s_2 = time.time()
         if self.need_lane_change():
             self.curr_plan = 1 - self.curr_plan
+        # print('_need_lane_change: {}'.format(time.time()-s_2))
         return sim_state

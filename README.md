@@ -31,9 +31,25 @@
 ## 2. Generate your NPC trajectory JSON file
 
 Good luck!
+cp ./data/npc_pose.json ./npc.json
 
 ## 3. Run simulation
 - Enable the pipenv environemnt if you haven't: ``pipenv shell``
 - ``cp {your_json_file}.json ./npc.json``
 - Run the simulation: ``./task_eval.sh``
 - When it ends, you will see the simulation video (``sim_view.mp4``) and log (``simulation.log``) in the data folder
+
+conda update ffmpeg
+pip install simple-pid
+pip install folium
+pip install liblas
+pip install pyproj==3.0.1
+pip install pyopencl==2019.1.2
+
+pip install tensorflow-gpu==1.15
+pip install keras==2.3.1
+
+pip uninstall lgsvl
+cd ./3rd_party/PythonAPI
+pip install --user -e .
+

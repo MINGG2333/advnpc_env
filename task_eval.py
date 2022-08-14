@@ -88,16 +88,21 @@ def task_eval(logdir, adc_plan_traj_files, attack_npc_traj_file, **kwargs):
         "yaw": npc_state.attitude[1],
         "speed": npc_state.speed})
     frame_count = 0
+    s_ = time.time()
     while True:
         print("Time {:.2f}".format(sim_ctrl.sim_time))
-        frame_id = sim_ctrl.next_yuv_frame()
+        frame_id = sim_ctrl.next_yuv_frame(save=False)
 
+        # s_2 = time.time()
         # Serve as localization
         adc_state = sim_ctrl.get_adc_state()
         x, y = lonlat_to_xy(adc_state.position[1], adc_state.position[0])
         curr_waypt = [adc_state.time, x, y]
+        # print('lonlat_to_xy: {}'.format(time.time()-s_2))
 
+        # s_2 = time.time()
         adc_state = sim_ctrl.run_control(curr_waypt)
+        # print('run_control: {}'.format(time.time()-s_2))
         adc_poses.append({
             "timestamp": round(adc_state.time, 2),
             "latitude": adc_state.position[0],
@@ -117,10 +122,12 @@ def task_eval(logdir, adc_plan_traj_files, attack_npc_traj_file, **kwargs):
             "pitch": npc_state.attitude[2],
             "yaw": npc_state.attitude[1],
             "speed": npc_state.speed})
+        # print('tick_time: {}'.format(time.time()-s_))
         frame_count += 1
         if frame_count >= SIM_FRAMES:
             break
 
+    print('total_time: {}'.format(time.time()-s_))
     # Save ADC pose
     pose_file = os.path.join(logdir, 'adc_pose.json')
     with open(pose_file, 'w') as f:
