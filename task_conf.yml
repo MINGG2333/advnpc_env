@@ -1,0 +1,4 @@
+task_id: [0]
+0:
+  args_eval:
+    map: Achilles-AdversarialNPC-SanFranciscoSingleBox

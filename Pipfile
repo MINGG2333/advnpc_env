@@ -1,0 +1,37 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+numpy = "*"
+pandas = "*"
+matplotlib = "*"
+folium = "*"
+scipy = "*"
+pyquaternion = "*"
+liblas = "*"
+opencv-python = "*"
+tqdm = "*"
+pygame = "*"
+pyopencl = "==2019.1.2"
+tensorflow-gpu = "==1.15"
+keras = "==2.3.1"
+control = "*"
+filterpy = "*"
+lgsvl = {editable = true, path = "./3rd_party/PythonAPI"}
+simple-pid = "*"
+cffi = "*"
+setproctitle = "*"
+pyzmq = "*"
+cython = "==0.29.13"
+pycapnp = "==0.6.4"
+pillow = "*"
+pyproj = "==3.0.1"
+requests = "*"
+boto3 = "*"
+
+[requires]
+python_version = "3.7"
